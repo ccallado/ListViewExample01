@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ListViewExample01</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="hello">Hello World, MyList!</string>
+
+    <drawable name="rot">#FF0000</drawable>
+
+    <string name="title_activity_my_list">MyListActivity</string>
+
+    <string name="horaIni">00:00:00</string>
+
+    <string name="horaFin">23:59:59</string>
+
+    <string name="subTitulo">Vacío</string>
+    <string name="subTituloTra">Vacio</string>
+
+</resources>
