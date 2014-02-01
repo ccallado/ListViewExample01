@@ -2,8 +2,14 @@ package com.example.listviewexample01;
 
 import java.text.DecimalFormat;
 
-public class Subtitulo {
-    protected long horaIni;
+public class Subtitulo implements Cloneable {
+    @Override
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return super.clone();
+	}
+
+	protected long horaIni;
     protected long horaFin;
     protected String textoSub;
     protected String textoSubTra;

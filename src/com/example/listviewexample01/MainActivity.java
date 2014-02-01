@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
 	TextView nombrePeli;
 	final static int RQS_OPEN_AUDIO_MP3 = 1;
 	String srcPath = null;
-	ArrayList<Subtitulo> list;
+	ArrayList<Subtitulo> lista;
 	ListView lv;
 	
 	@Override
@@ -30,16 +30,10 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-//	    String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
-//	        "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-//	        "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
-//	        "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux", "OS/2",
-//	        "Android", "iPhone", "WindowsMobile" };
-
 	    lv = (ListView) findViewById(R.id.listView);
-	    list = obtenerItems();
+	    lista = obtenerItems();
 	    
-	    final AdapterSubtitulo adapter = new AdapterSubtitulo(this, list);
+	    final AdapterSubtitulo adapter = new AdapterSubtitulo(this, lista);
 	    lv.setAdapter(adapter);
 
 	    nombrePeli = (TextView)findViewById(R.id.nombrePeli);
@@ -119,8 +113,13 @@ public class MainActivity extends Activity {
 			if (requestCode == RQS_OPEN_AUDIO_MP3) {
 				try
 				{
-					int j = 0;
-					Subtitulo sub = new Subtitulo(0, 0, "", "",0);
+					//variables locales
+					int ultSubEsp = 0;
+					int margen = 0; //Tiempo antes y despues que no se tendrá en cuenta de los subtitulos
+					
+					Subtitulo subEspSig = new Subtitulo(0, 0, "", "",0);
+					Subtitulo subEspTmp = new Subtitulo(0, 0, "", "",0);
+					Subtitulo subIng = new Subtitulo(0, 0, "", "",0);
 					
 					Uri audioFileUri = data.getData();
 					nombrePeli.setText(audioFileUri.getLastPathSegment());
@@ -130,64 +129,263 @@ public class MainActivity extends Activity {
 
 					//cmdReset();
 					//cmdSetDataSource(srcPath);
-					list.clear();
+					lista.clear();
 					for (int i = 0; i < listaFicheros.length; i++) {
-						File f = new File(listaFicheros[i]);
+						File fileFichero = new File(listaFicheros[i]);
 					
-						BufferedReader fin =
+						BufferedReader bufFichero =
 								new BufferedReader(
 										new InputStreamReader(
-												new FileInputStream(f)));
-										
-						String texto = fin.readLine();
+												new FileInputStream(fileFichero)));
+						
+						//Leo la primera línea del fichero
+						
+						String textoLinea = bufFichero.readLine();
 						String varTexto;
-						while(texto != null){
-							Subtitulo mio = new Subtitulo(0,0,"","",0);
-							mio.id = Long.parseLong(texto) + 0;
-							texto = fin.readLine();
-							mio.horaIni = 
-									Long.parseLong(texto.substring(0, 2)) * 60 * 60 * 1000 +
-									Long.parseLong(texto.substring(3, 5)) * 60 * 1000 +
-									Long.parseLong(texto.substring(6, 8)) * 1000 +
-									Long.parseLong(texto.substring(9, 12));
+						
+						//Mientras haya líneas en el fichero
+						while(textoLinea != null){
+							//Creo subtitulo temporal uno nuevo por cada objeto
+							Subtitulo Tmp = new Subtitulo(0,0,"","",0);
+
+							//Pongo el ID
+							Tmp.id = Long.parseLong(textoLinea) + 0;
+							textoLinea = bufFichero.readLine();
+							//Pongo la hora de inicio
+							Tmp.horaIni = 
+									Long.parseLong(textoLinea.substring(0, 2)) * 60 * 60 * 1000 +
+									Long.parseLong(textoLinea.substring(3, 5)) * 60 * 1000 +
+									Long.parseLong(textoLinea.substring(6, 8)) * 1000 +
+									Long.parseLong(textoLinea.substring(9, 12));
+							//Pongo la hora de finalización
+							Tmp.horaFin= 
+									Long.parseLong(textoLinea.substring(17, 19)) * 60 * 60 * 1000 +
+									Long.parseLong(textoLinea.substring(20, 22)) * 60 * 1000 +
+									Long.parseLong(textoLinea.substring(23, 25)) * 1000 +
+									Long.parseLong(textoLinea.substring(26, 29));
 							
-							mio.horaFin= 
-									Long.parseLong(texto.substring(17, 19)) * 60 * 60 * 1000 +
-									Long.parseLong(texto.substring(20, 22)) * 60 * 1000 +
-									Long.parseLong(texto.substring(23, 25)) * 1000 +
-									Long.parseLong(texto.substring(26, 29));
-							
-							texto = fin.readLine();
+							//Saco el subtitulo del idioma (puede estar compuesto por varias líneas)
+							//Puede estar en HTML y hay que renderizarlo para hacerlo texto plano
+							textoLinea = bufFichero.readLine();
 							varTexto="";
-							while(!(texto == null || "".equals(texto))){
-								varTexto = varTexto + texto + "\n";
-								texto = fin.readLine();
+							
+							while(!(textoLinea == null || "".equals(textoLinea))){
+								varTexto = varTexto + textoLinea + "\n";
+								textoLinea = bufFichero.readLine();
 							}
-							varTexto = varTexto.substring(0, varTexto.length() - 1);
+							//Quito el último salto de línea
+							if ("".equals(varTexto)){
+								varTexto = varTexto.substring(0, varTexto.length() - 1);
+							}
+							
+							//Pongo Subtitulo en primer idioma o segundo
 							if (i == 0)
-								mio.setTextoSub(varTexto);
+								Tmp.setTextoSub(varTexto);
 							else
 								//list.contains(mio.horaIni);
-								mio.setTextoSubTra(varTexto);
+								Tmp.setTextoSubTra(varTexto);
+							
+							subIng = (Subtitulo)Tmp.clone();
 	
+							//Si es el primer idioma
 							if (i == 0) {
-								while (j < list.size()) {
-									sub = list.get(j);
-									if (sub.horaIni <= mio.horaIni && sub.horaFin >= mio.horaFin){
+								lista.add(new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+							}
+							//Si es el segundo idioma
+							else {
+								//Busco el primer subtitulo del primer idioma
+								//que incluya al subtitulo del segundo idioma 
+								while (ultSubEsp < lista.size()) {
+									Tmp = (Subtitulo)subIng.clone();
+									subEspTmp = lista.get(ultSubEsp);
+									//Si fecha final segundo idioma > fecha inicio primer idioma
+									//if (Tmp.horaFin >= subEspTmp.horaIni && Tmp.horaIni > subEspTmp.horaFin) {
+									if (Tmp.horaFin - subEspTmp.horaIni >= margen && Tmp.horaIni - subEspTmp.horaFin > margen) {
+										ultSubEsp++;
+										continue;
+									}
+
+									//Recojo el siguiente subtitulo del primer idioma si existe
+									try {
+										subEspSig = lista.get(ultSubEsp+1);
+									} catch (Exception e) {
+										subEspSig = new Subtitulo(0, 0, "", "",0);
+									}
 										
+									//No hay subtitulo del primer idioma 
+									if (subEspTmp.horaIni > Tmp.horaFin) {
+										//1 - - - -
+										//Creo un subtitulo nuevo segundo idioma sin primer idioma
+										lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//										Siguiente subtitulo Ing
+										break;
+									}
+									else {
+										//Ya había comenzado el subtitulo del primer idioma
+										//if (subEspTmp.horaIni < Tmp.horaIni) {
+										if ( Tmp.horaIni - subEspTmp.horaIni > margen) {
+											//El primer idioma continua después del segundo
+											//if (subEspTmp.horaFin > Tmp.horaFin) {
+											if (subEspTmp.horaFin - Tmp.horaFin > margen) {
+												//0 1 1 0 0
+//												Incluir subtitulo Ing en EspT
+												subEspTmp.textoSubTra = Tmp.textoSubTra ;
+//												Actualizar subtitulo Esp desde EspT
+												lista.set(ultSubEsp, subEspTmp);
+//												Siguiente subtitulo Ing
+												break;
+											}
+											else {
+												//El segundo idioma se solapa con el siguiente del primer idioma
+												//if (Tmp.horaFin > subEspSig.horaIni) {
+												if (Tmp.horaFin - subEspSig.horaIni > margen) {
+													//Hay que dividir el subtitulo
+													if (!"".equals(subEspTmp.textoSubTra )){
+														//0 1 0 1 1
+//														Hora Final EspT = Hora Inicio Ing - 1
+														subEspTmp.horaFin = Tmp.horaIni - 1;
+//														Hora Final Tmp = Hora Inicio Esp Siguiente – 1
+														Tmp.horaFin = subEspSig.horaIni - 1; 
+//														Incluir subtitulo Esp en Tmp
+														Tmp.textoSub = subEspTmp.textoSub;
+//														Incluir subtitulo Ing en Tmp
+														Tmp.textoSubTra = Tmp.textoSubTra;
+//														Insertar Subtitulo Tmp
+														lista.add(ultSubEsp + 1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//														Actualizar subtitulo Esp desde EspT
+														//lista.set(ultSubEsp, subEspTmp);
+//														Siguiente subtitulo Esp
+														ultSubEsp++;
+													}
+													else {
+														//0 1 0 1 0
+//														Hora Final EspT = Hora Inicio Esp Siguiente – 1
+														subEspTmp.horaFin = subEspSig.horaIni-1;
+//														Hora Inicio Tmp = Hora Inicio Esp Siguiente
+														Tmp.horaIni = subEspSig.horaIni;
+//														Incluir subtitulo Ing en EspT
+														subEspTmp.textoSubTra = Tmp.textoSubTra;
+//														Actualizar subtitulo Esp desde EspT
+														//lista.set(ultSubEsp, subEspTmp);
+//														Siguiente subtitulo Esp
+														ultSubEsp++;
+													}
+												}
+												else {
+													//Hay que dividir el subtitulo
+													if (!"".equals(subEspTmp.textoSubTra )){
+														//0 1 0 0 1
+//														Hora Inicio Tmp = Hora Final Esp + 1
+														subEspTmp.horaIni = subEspTmp.horaFin + 1;
+//														Hora Final Tmp = Hora Fin Ing
+														Tmp.horaFin= Tmp.horaFin;
+//														Incluir subtitulo Esp en Tmp
+														Tmp.textoSub = subEspTmp.textoSub;
+//														Incluir subtitulo Ing en Tmp
+														Tmp.textoSubTra=Tmp.textoSubTra;
+//														Insertar Subtitulo Tmp
+														lista.add(ultSubEsp+1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//														Siguiente subtitulo Esp
+														ultSubEsp++;
+//														Siguiente subtitulo Ing
+														break;
+													}
+													else {
+														//0 1 0 0 0
+//														Hora Final EspT = Hora Fin Ing
+														subEspTmp.horaFin = Tmp.horaFin;
+//														Incluir subtitulo Ing en EspT
+														subEspTmp.textoSubTra = Tmp.textoSubTra;
+//														Actualizar subtitulo Esp desde EspT
+														//lista.set(ultSubEsp, subEspTmp);
+//														Siguiente subtitulo Esp
+														ultSubEsp++;
+//														Siguiente subtitulo Ing
+														break;
+													}
+												}
+											}
+										}
+										else {
+											//El primer idioma continua después del segundo
+											//if (subEspTmp.horaFin > Tmp.horaFin) {
+											if (subEspTmp.horaFin - Tmp.horaFin > margen) {
+												//El segundo idioma NO se solapa con el siguiente del primer idioma
+												//if (!(Tmp.horaFin > subEspSig.horaIni)) {
+												if (!(Tmp.horaFin - subEspSig.horaIni > margen)) {
+													//No hay que dividir el subtitulo
+													if (!"".equals(subEspTmp.textoSubTra )){
+														//0 0 1 0 1
+//														Hora Inicio Tmp = Hora Inicio Ing
+														Tmp.horaIni = Tmp.horaIni;
+//														Hora Final Tmp = Hora Inicio Esp - 1
+														Tmp.horaFin = subEspTmp.horaIni - 1;
+//														Incluir subtitulo Esp en Tmp
+														Tmp.textoSub = subEspTmp.textoSub;
+//														Incluir subtitulo Ing en Tmp
+														Tmp.textoSubTra = Tmp.textoSubTra;
+//														Insertar Subtitulo Tmp
+														lista.add(ultSubEsp+1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//														Siguiente subtitulo Ing
+														break;
+													}
+													else {
+														//0 0 1 0 0
+//														Hora Inicio EspT = Hora Inicio Ing
+														subEspTmp.horaIni = Tmp.horaIni;
+//														Incluir subtitulo Ing en EspT
+														subEspTmp.textoSubTra = Tmp.textoSubTra;
+//														Actualizar subtitulo Esp desde EspT
+														//lista.set(ultSubEsp, subEspTmp);
+//														Siguiente subtitulo Ing
+														break;
+													}
+												}
+											}
+											else {
+												//El segundo idioma se solapa con el siguiente del primer idioma
+												//if (Tmp.horaFin > subEspSig.horaIni) {
+												if (Tmp.horaFin - subEspSig.horaIni > margen) {
+													//0 0 0 1 0
+//													Hora Inicio EspT = Hora Inicio Ing
+													subEspTmp.horaIni = Tmp.horaIni;
+//													Hora Final EspT = Hora Inicio Esp Siguiente – 1
+													subEspTmp.horaFin = subEspSig.horaIni - 1;
+//													Incluir subtitulo Ing en EspT
+													subEspTmp.textoSubTra = Tmp.textoSubTra;
+//													Actualizar subtitulo Esp desde EspT
+													lista.set(ultSubEsp, subEspTmp);
+//													Siguiente subtitulo Esp
+													ultSubEsp++;
+												}
+												else {
+													//0 0 0 0 0
+//													Hora Inicio EspT = Hora Inicio Ing
+													subEspTmp.horaIni = Tmp.horaIni;
+//													Hora Final EspT = Hora Fin Ing
+													subEspTmp.horaFin = Tmp.horaFin;
+//													Incluir subtitulo Ing en EspT
+													subEspTmp.textoSubTra = Tmp.textoSubTra;
+//													Actualizar subtitulo Esp desde EspT
+													lista.set(ultSubEsp, subEspTmp);
+//													Siguiente subtitulo Esp
+													ultSubEsp++;
+//													Siguiente subtitulo Ing
+													break;
+												}
+											}
+										}
 									}
 								}
 							}
-							else {
-								list.add(new Subtitulo(mio.horaIni, mio.horaFin, mio.textoSub, mio.textoSubTra, mio.id));
-							}
 
-							texto = fin.readLine();
+							//Voy a por el siguiente subtitulo en el fichero
+							textoLinea = bufFichero.readLine();
 			            } 
-						
-						fin.close();
+						//Cierro el fichero
+						bufFichero.close();
 					}
-
+					//Actualizo el listView
 					((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
 				}
 				catch (Exception ex)
