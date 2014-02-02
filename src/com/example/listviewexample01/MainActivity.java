@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
@@ -24,6 +26,7 @@ public class MainActivity extends Activity {
 	String srcPath = null;
 	ArrayList<Subtitulo> lista;
 	ListView lv;
+	SeekBar seekbar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +52,23 @@ public class MainActivity extends Activity {
 			} 
 	    });
 
+	    seekbar = (SeekBar) findViewById(R.id.seekBar1);
+        seekbar.setMax(lista.size());
+        
+        seekbar.setOnSeekBarChangeListener( new OnSeekBarChangeListener() {
+        	public void onProgressChanged(SeekBar seekBar, int progress,
+        			boolean fromUser) {
+        		lv.setSelection(progress);
+        	}
+
+        	public void onStartTrackingTouch(SeekBar seekBar) {	
+        		// TODO Auto-generated method stub
+        	}
+
+        	public void onStopTrackingTouch(SeekBar seekBar) {
+        		// TODO Auto-generated method stub
+        	}
+        });
 //	    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //
 //	      @Override
@@ -115,7 +135,7 @@ public class MainActivity extends Activity {
 				{
 					//variables locales
 					int ultSubEsp = 0;
-					int margen = 0; //Tiempo antes y despues que no se tendrá en cuenta de los subtitulos
+					int margen = 333; //Tiempo antes y despues que no se tendrá en cuenta de los subtitulos
 					
 					Subtitulo subEspSig = new Subtitulo(0, 0, "", "",0);
 					Subtitulo subEspTmp = new Subtitulo(0, 0, "", "",0);
@@ -136,7 +156,7 @@ public class MainActivity extends Activity {
 						BufferedReader bufFichero =
 								new BufferedReader(
 										new InputStreamReader(
-												new FileInputStream(fileFichero)));
+												new FileInputStream(fileFichero), "ISO-8859-1"));
 						
 						//Leo la primera línea del fichero
 						
@@ -245,13 +265,16 @@ public class MainActivity extends Activity {
 //														Hora Final EspT = Hora Inicio Ing - 1
 														subEspTmp.horaFin = Tmp.horaIni - 1;
 //														Hora Final Tmp = Hora Inicio Esp Siguiente – 1
-														Tmp.horaFin = subEspSig.horaIni - 1; 
+														Tmp.horaFin = subEspSig.horaIni - 1;
+//														Hora Inicial Ingles = Hora Inicio Esp Siguiente
+														subIng.horaIni = subEspSig.horaIni;
 //														Incluir subtitulo Esp en Tmp
 														Tmp.textoSub = subEspTmp.textoSub;
 //														Incluir subtitulo Ing en Tmp
 														Tmp.textoSubTra = Tmp.textoSubTra;
 //														Insertar Subtitulo Tmp
-														lista.add(ultSubEsp + 1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+														ultSubEsp++;
+														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
 //														Actualizar subtitulo Esp desde EspT
 														//lista.set(ultSubEsp, subEspTmp);
 //														Siguiente subtitulo Esp
@@ -262,7 +285,8 @@ public class MainActivity extends Activity {
 //														Hora Final EspT = Hora Inicio Esp Siguiente – 1
 														subEspTmp.horaFin = subEspSig.horaIni-1;
 //														Hora Inicio Tmp = Hora Inicio Esp Siguiente
-														Tmp.horaIni = subEspSig.horaIni;
+														//Tmp.horaIni = subEspSig.horaIni;
+														subIng.horaIni = subEspSig.horaIni;
 //														Incluir subtitulo Ing en EspT
 														subEspTmp.textoSubTra = Tmp.textoSubTra;
 //														Actualizar subtitulo Esp desde EspT
@@ -275,8 +299,8 @@ public class MainActivity extends Activity {
 													//Hay que dividir el subtitulo
 													if (!"".equals(subEspTmp.textoSubTra )){
 														//0 1 0 0 1
-//														Hora Inicio Tmp = Hora Final Esp + 1
-														subEspTmp.horaIni = subEspTmp.horaFin + 1;
+//														Hora Fin Esp = Hora Inicio Ing
+														subEspTmp.horaFin = Tmp.horaIni - 1;
 //														Hora Final Tmp = Hora Fin Ing
 														Tmp.horaFin= Tmp.horaFin;
 //														Incluir subtitulo Esp en Tmp
@@ -284,7 +308,8 @@ public class MainActivity extends Activity {
 //														Incluir subtitulo Ing en Tmp
 														Tmp.textoSubTra=Tmp.textoSubTra;
 //														Insertar Subtitulo Tmp
-														lista.add(ultSubEsp+1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+														ultSubEsp++;
+														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
 //														Siguiente subtitulo Esp
 														ultSubEsp++;
 //														Siguiente subtitulo Ing
@@ -325,7 +350,8 @@ public class MainActivity extends Activity {
 //														Incluir subtitulo Ing en Tmp
 														Tmp.textoSubTra = Tmp.textoSubTra;
 //														Insertar Subtitulo Tmp
-														lista.add(ultSubEsp+1, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+														ultSubEsp++;
+														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
 //														Siguiente subtitulo Ing
 														break;
 													}
@@ -347,8 +373,11 @@ public class MainActivity extends Activity {
 												//if (Tmp.horaFin > subEspSig.horaIni) {
 												if (Tmp.horaFin - subEspSig.horaIni > margen) {
 													//0 0 0 1 0
+//													Hora Inicio segundo idioma = Hora Inicio Esp Siguiente
+													subIng.horaIni = subEspSig.horaIni;
+													Tmp.horaIni = subEspSig.horaIni;
 //													Hora Inicio EspT = Hora Inicio Ing
-													subEspTmp.horaIni = Tmp.horaIni;
+													//subEspTmp.horaIni = Tmp.horaIni;
 //													Hora Final EspT = Hora Inicio Esp Siguiente – 1
 													subEspTmp.horaFin = subEspSig.horaIni - 1;
 //													Incluir subtitulo Ing en EspT
@@ -367,7 +396,7 @@ public class MainActivity extends Activity {
 //													Incluir subtitulo Ing en EspT
 													subEspTmp.textoSubTra = Tmp.textoSubTra;
 //													Actualizar subtitulo Esp desde EspT
-													lista.set(ultSubEsp, subEspTmp);
+													//lista.set(ultSubEsp, subEspTmp);
 //													Siguiente subtitulo Esp
 													ultSubEsp++;
 //													Siguiente subtitulo Ing
@@ -386,7 +415,9 @@ public class MainActivity extends Activity {
 						bufFichero.close();
 					}
 					//Actualizo el listView
+					seekbar.setMax(lista.size());
 					((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
+					lv.setSelection(0);
 				}
 				catch (Exception ex)
 				{

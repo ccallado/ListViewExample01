@@ -17,12 +17,16 @@
         android:text="El discurso del rey"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
+    <SeekBar
+        android:id="@+id/seekBar1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="400dp" >
-
-        <!-- Preview: listitem=@layout/rowlayout -->
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
     </ListView>
 
     <LinearLayout
@@ -49,14 +53,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@android:drawable/ic_media_play" />
-        
+
         <ImageButton
             android:id="@+id/btnSigui"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@android:drawable/ic_media_next" />
-        
     </LinearLayout>
 
 </LinearLayout>

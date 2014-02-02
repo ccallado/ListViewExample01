@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,11 +59,11 @@ public class AdapterSubtitulo extends BaseAdapter {
 
 		//Rellenamos el SubTitulo
 		TextView subTitulo = (TextView) v.findViewById(R.id.subTitulo);
-		subTitulo.setText(sub.getTextoSub());
+		subTitulo.setText(Html.fromHtml(sub.getTextoSub()));
 
 		//Rellenamos el SubTituloTra
 		TextView subTituloTra = (TextView) v.findViewById(R.id.subTituloTra);
-		subTituloTra.setText(sub.getTextoSubTra());
+		subTituloTra.setText(Html.fromHtml(sub.getTextoSubTra()));
 
 		// Retornamos la vista
 		return v;
