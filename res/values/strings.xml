@@ -16,5 +16,6 @@
 
     <string name="subTitulo">Vacío</string>
     <string name="subTituloTra">Vacio</string>
+    <string name="nombrePeli"></string>
 
 </resources>

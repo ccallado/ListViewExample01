@@ -7,14 +7,19 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -39,6 +44,7 @@ public class MainActivity extends Activity {
 	    final AdapterSubtitulo adapter = new AdapterSubtitulo(this, lista);
 	    lv.setAdapter(adapter);
 
+	    //Si realizo una pulsación larga sobre el nombrede la película lanzo un intent para buscar un fichero
 	    nombrePeli = (TextView)findViewById(R.id.nombrePeli);
 	    nombrePeli.setOnLongClickListener(new OnLongClickListener(){
 			public boolean onLongClick(View v) {
@@ -52,6 +58,8 @@ public class MainActivity extends Activity {
 			} 
 	    });
 
+	    //Preparo la barra deslizadora con la longitud de subtitulos 
+	    //y creo un manejador de eventos para el cambio
 	    seekbar = (SeekBar) findViewById(R.id.seekBar1);
         seekbar.setMax(lista.size());
         
@@ -69,6 +77,25 @@ public class MainActivity extends Activity {
         		// TODO Auto-generated method stub
         	}
         });
+        
+        ImageButton arrancar = (ImageButton) findViewById(R.id.btnPlay);
+
+        arrancar.setOnClickListener(new OnClickListener() {
+               public void onClick(View view) {
+            	   Intent intent = new Intent(MainActivity.this, ServicioMusica.class);
+                   startService(intent);
+               }
+        });
+
+        ImageButton detener = (ImageButton) findViewById(R.id.btnPausa);
+        
+        detener.setOnClickListener(new OnClickListener() {
+               public void onClick(View view) {
+                      stopService(new Intent(MainActivity.this,
+                                   ServicioMusica.class));
+               }
+        });
+        
 //	    listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 //
 //	      @Override
@@ -102,6 +129,12 @@ public class MainActivity extends Activity {
 //				Toast.LENGTH_LONG).show();
 //		return true;
 //	}
+
+// Función que lanza la actividad Preferencias
+    public void lanzarPreferencias (View view) {
+    	Intent i = new Intent(this, Preferencias.class);
+    	startActivity(i);
+    }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -145,6 +178,15 @@ public class MainActivity extends Activity {
 					nombrePeli.setText(audioFileUri.getLastPathSegment());
 					srcPath = audioFileUri.getPath().substring(0, audioFileUri.getPath().length()-audioFileUri.getLastPathSegment().length());
 					String[] listaFicheros = new String[]{"",""};
+					
+					SharedPreferences prefs =
+						     getSharedPreferences("com.example.listviewexample01_preferences", Context.MODE_PRIVATE);	
+					Editor edPref = prefs.edit();
+					edPref.putString("nombrePeli", audioFileUri.getPath());
+					edPref.commit();
+					
+					Boolean varAgrupar = prefs.getBoolean("agruparSubtitulos", false);
+
 					BuscadorDeFicheros.dameFicheros(srcPath, BuscadorDeFicheros.dameRegex(audioFileUri.getLastPathSegment().substring(0, audioFileUri.getLastPathSegment().length()-4) + "*.srt"), listaFicheros, false);
 
 					//cmdReset();
@@ -262,58 +304,92 @@ public class MainActivity extends Activity {
 													//Hay que dividir el subtitulo
 													if (!"".equals(subEspTmp.textoSubTra )){
 														//0 1 0 1 1
-//														Hora Final EspT = Hora Inicio Ing - 1
-														subEspTmp.horaFin = Tmp.horaIni - 1;
-//														Hora Final Tmp = Hora Inicio Esp Siguiente – 1
-														Tmp.horaFin = subEspSig.horaIni - 1;
-//														Hora Inicial Ingles = Hora Inicio Esp Siguiente
-														subIng.horaIni = subEspSig.horaIni;
-//														Incluir subtitulo Esp en Tmp
-														Tmp.textoSub = subEspTmp.textoSub;
-//														Incluir subtitulo Ing en Tmp
-														Tmp.textoSubTra = Tmp.textoSubTra;
-//														Insertar Subtitulo Tmp
-														ultSubEsp++;
-														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
-//														Actualizar subtitulo Esp desde EspT
-														//lista.set(ultSubEsp, subEspTmp);
-//														Siguiente subtitulo Esp
-														ultSubEsp++;
+														if (varAgrupar) {
+//															Hora Final EspT = Hora Final Esp Siguiente
+															subEspTmp.horaFin = subEspSig.horaFin;
+//															Incluir subtitulo Esp Siguiente en EspT
+															subEspTmp.textoSub = subEspTmp.textoSub + "\n" + subEspSig.textoSub;
+//															Incluir subtitulo Ing en EspT
+//															subEspTmp.textoSubTra = subEspTmp.textoSubTra + "\n" + Tmp.textoSubTra;
+//															Elimina subtitulo Esp Siguiente
+															lista.remove(ultSubEsp+1);
+														}
+														else {
+//															Hora Final EspT = Hora Inicio Ing - 1
+															subEspTmp.horaFin = Tmp.horaIni - 1;
+//															Hora Final Tmp = Hora Inicio Esp Siguiente – 1
+															Tmp.horaFin = subEspSig.horaIni - 1;
+//															Hora Inicial Ingles = Hora Inicio Esp Siguiente
+															subIng.horaIni = subEspSig.horaIni;
+//															Incluir subtitulo Esp en Tmp
+															Tmp.textoSub = subEspTmp.textoSub;
+//															Incluir subtitulo Ing en Tmp
+															Tmp.textoSubTra = Tmp.textoSubTra;
+//															Insertar Subtitulo Tmp
+															ultSubEsp++;
+															lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//															Actualizar subtitulo Esp desde EspT
+															//lista.set(ultSubEsp, subEspTmp);
+//															Siguiente subtitulo Esp
+															ultSubEsp++;
+														}
 													}
 													else {
 														//0 1 0 1 0
-//														Hora Final EspT = Hora Inicio Esp Siguiente – 1
-														subEspTmp.horaFin = subEspSig.horaIni-1;
-//														Hora Inicio Tmp = Hora Inicio Esp Siguiente
-														//Tmp.horaIni = subEspSig.horaIni;
-														subIng.horaIni = subEspSig.horaIni;
-//														Incluir subtitulo Ing en EspT
-														subEspTmp.textoSubTra = Tmp.textoSubTra;
-//														Actualizar subtitulo Esp desde EspT
-														//lista.set(ultSubEsp, subEspTmp);
-//														Siguiente subtitulo Esp
-														ultSubEsp++;
+														if (varAgrupar) {
+//															Hora Final EspT = Hora Final Esp Siguiente
+															subEspTmp.horaFin = subEspSig.horaFin;
+//															Incluir subtitulo Esp Siguiente en EspT
+															subEspTmp.textoSub = subEspTmp.textoSub + "\n" + subEspSig.textoSub;
+//															Elimina subtitulo Esp Siguiente
+															lista.remove(ultSubEsp+1);
+														}
+														else {
+//															Hora Final EspT = Hora Inicio Esp Siguiente – 1
+															subEspTmp.horaFin = subEspSig.horaIni-1;
+//															Hora Inicio Tmp = Hora Inicio Esp Siguiente
+															//Tmp.horaIni = subEspSig.horaIni;
+															subIng.horaIni = subEspSig.horaIni;
+//															Incluir subtitulo Ing en EspT
+															subEspTmp.textoSubTra = Tmp.textoSubTra;
+//															Actualizar subtitulo Esp desde EspT
+															//lista.set(ultSubEsp, subEspTmp);
+//															Siguiente subtitulo Esp
+															ultSubEsp++;
+														}
 													}
 												}
 												else {
 													//Hay que dividir el subtitulo
 													if (!"".equals(subEspTmp.textoSubTra )){
 														//0 1 0 0 1
-//														Hora Fin Esp = Hora Inicio Ing
-														subEspTmp.horaFin = Tmp.horaIni - 1;
-//														Hora Final Tmp = Hora Fin Ing
-														Tmp.horaFin= Tmp.horaFin;
-//														Incluir subtitulo Esp en Tmp
-														Tmp.textoSub = subEspTmp.textoSub;
-//														Incluir subtitulo Ing en Tmp
-														Tmp.textoSubTra=Tmp.textoSubTra;
-//														Insertar Subtitulo Tmp
-														ultSubEsp++;
-														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
-//														Siguiente subtitulo Esp
-														ultSubEsp++;
-//														Siguiente subtitulo Ing
-														break;
+														if (varAgrupar) {
+//															Hora Final EspT = Hora Final Ing
+															subEspTmp.horaFin = Tmp.horaFin;
+//															Incluir subtitulo Ing en EspT
+															subEspTmp.textoSubTra = subEspTmp.textoSubTra + "\n" + Tmp.textoSubTra;
+//															Siguiente subtitulo Esp
+															ultSubEsp++;
+//															Siguiente subtitulo Ing
+															break;
+														}
+														else {
+//															Hora Fin Esp = Hora Inicio Ing
+															subEspTmp.horaFin = Tmp.horaIni - 1;
+//															Hora Final Tmp = Hora Fin Ing
+															Tmp.horaFin= Tmp.horaFin;
+//															Incluir subtitulo Esp en Tmp
+															Tmp.textoSub = subEspTmp.textoSub;
+//															Incluir subtitulo Ing en Tmp
+															Tmp.textoSubTra=Tmp.textoSubTra;
+//															Insertar Subtitulo Tmp
+															ultSubEsp++;
+															lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//															Siguiente subtitulo Esp
+															ultSubEsp++;
+//															Siguiente subtitulo Ing
+															break;
+														}
 													}
 													else {
 														//0 1 0 0 0
@@ -341,19 +417,29 @@ public class MainActivity extends Activity {
 													//No hay que dividir el subtitulo
 													if (!"".equals(subEspTmp.textoSubTra )){
 														//0 0 1 0 1
-//														Hora Inicio Tmp = Hora Inicio Ing
-														Tmp.horaIni = Tmp.horaIni;
-//														Hora Final Tmp = Hora Inicio Esp - 1
-														Tmp.horaFin = subEspTmp.horaIni - 1;
-//														Incluir subtitulo Esp en Tmp
-														Tmp.textoSub = subEspTmp.textoSub;
-//														Incluir subtitulo Ing en Tmp
-														Tmp.textoSubTra = Tmp.textoSubTra;
-//														Insertar Subtitulo Tmp
-														ultSubEsp++;
-														lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
-//														Siguiente subtitulo Ing
-														break;
+														if (varAgrupar) {
+//															Hora Inicio Tmp = Hora Inicio Ing
+															Tmp.horaIni = Tmp.horaIni;
+//															Incluir subtitulo Ing en EspT
+															subEspTmp.textoSubTra = subEspTmp.textoSubTra + "\n" + Tmp.textoSubTra;
+//															Siguiente subtitulo Ing
+															break;
+														}
+														else {
+//															Hora Inicio Tmp = Hora Inicio Ing
+															Tmp.horaIni = Tmp.horaIni;
+//															Hora Final Tmp = Hora Inicio Esp - 1
+															Tmp.horaFin = subEspTmp.horaIni - 1;
+//															Incluir subtitulo Esp en Tmp
+															Tmp.textoSub = subEspTmp.textoSub;
+//															Incluir subtitulo Ing en Tmp
+															Tmp.textoSubTra = Tmp.textoSubTra;
+//															Insertar Subtitulo Tmp
+															ultSubEsp++;
+															lista.add(ultSubEsp, new Subtitulo(Tmp.horaIni, Tmp.horaFin, Tmp.textoSub, Tmp.textoSubTra, Tmp.id));
+//															Siguiente subtitulo Ing
+															break;
+														}
 													}
 													else {
 														//0 0 1 0 0
@@ -373,19 +459,29 @@ public class MainActivity extends Activity {
 												//if (Tmp.horaFin > subEspSig.horaIni) {
 												if (Tmp.horaFin - subEspSig.horaIni > margen) {
 													//0 0 0 1 0
-//													Hora Inicio segundo idioma = Hora Inicio Esp Siguiente
-													subIng.horaIni = subEspSig.horaIni;
-													Tmp.horaIni = subEspSig.horaIni;
-//													Hora Inicio EspT = Hora Inicio Ing
-													//subEspTmp.horaIni = Tmp.horaIni;
-//													Hora Final EspT = Hora Inicio Esp Siguiente – 1
-													subEspTmp.horaFin = subEspSig.horaIni - 1;
-//													Incluir subtitulo Ing en EspT
-													subEspTmp.textoSubTra = Tmp.textoSubTra;
-//													Actualizar subtitulo Esp desde EspT
-													lista.set(ultSubEsp, subEspTmp);
-//													Siguiente subtitulo Esp
-													ultSubEsp++;
+													if (varAgrupar) {
+//														Hora Final EspT = Hora Final Esp Siguiente
+														subEspTmp.horaFin = subEspSig.horaFin;
+//														Incluir subtitulo Esp Siguiente en EspT
+														subEspTmp.textoSub = subEspTmp.textoSub + "\n" + subEspSig.textoSub;
+//														Elimina subtitulo Esp Siguiente
+														lista.remove(ultSubEsp+1);
+													}
+													else {
+//														Hora Inicio segundo idioma = Hora Inicio Esp Siguiente
+														subIng.horaIni = subEspSig.horaIni;
+														Tmp.horaIni = subEspSig.horaIni;
+//														Hora Inicio EspT = Hora Inicio Ing
+														//subEspTmp.horaIni = Tmp.horaIni;
+//														Hora Final EspT = Hora Inicio Esp Siguiente – 1
+														subEspTmp.horaFin = subEspSig.horaIni - 1;
+//														Incluir subtitulo Ing en EspT
+														subEspTmp.textoSubTra = Tmp.textoSubTra;
+//														Actualizar subtitulo Esp desde EspT
+														lista.set(ultSubEsp, subEspTmp);
+//														Siguiente subtitulo Esp
+														ultSubEsp++;
+													}
 												}
 												else {
 													//0 0 0 0 0
@@ -414,10 +510,11 @@ public class MainActivity extends Activity {
 						//Cierro el fichero
 						bufFichero.close();
 					}
+					
 					//Actualizo el listView
 					seekbar.setMax(lista.size());
 					((BaseAdapter) lv.getAdapter()).notifyDataSetChanged();
-					lv.setSelection(0);
+			 		lv.setSelection(0);
 				}
 				catch (Exception ex)
 				{
