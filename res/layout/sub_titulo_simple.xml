@@ -10,12 +10,25 @@
         android:orientation="horizontal" >
 
         <TextView
+            android:id="@+id/Contador"
+            style="@android:style/TextAppearance.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/background_light"
+            android:gravity="center"
+            android:text="@string/Contador"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_light" />
+
+        <TextView
             android:id="@+id/horaIni"
             style="@android:style/TextAppearance.Small"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@android:color/background_light"
+            android:gravity="center"
             android:text="@string/horaIni"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/primary_text_light" />
@@ -27,6 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@android:color/background_light"
+            android:gravity="center"
             android:text="@string/horaFin"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/primary_text_light" />
@@ -37,6 +51,7 @@
         android:id="@+id/subTitulo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="@string/subTitulo"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/primary_text_dark" />
@@ -45,6 +60,7 @@
         android:id="@+id/subTituloTra"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:text="@string/subTituloTra"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/secondary_text_dark" />

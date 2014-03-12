@@ -10,7 +10,7 @@
         android:layout_height="60dip"
         android:layout_weight="1"
         android:background="#BFEFFF"
-        android:text="@+id/TextView01"
+        android:text="@+id/Contador"
         android:textColor="#000000"
         android:textSize="22sp" >
     </TextView>

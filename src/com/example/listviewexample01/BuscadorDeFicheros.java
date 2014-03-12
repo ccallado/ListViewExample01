@@ -6,7 +6,7 @@ package com.example.listviewexample01;
  * Buscador de ficheros.
  */
 import java.io.File;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -38,6 +38,7 @@ public class BuscadorDeFicheros {
 		File directorioInicial = new File(pathInicial);
 		if (directorioInicial.isDirectory()) {
 			File[] ficheros = directorioInicial.listFiles();
+			Arrays.sort(ficheros);
 			for (int i = 0; i < ficheros.length; i++) {
 				if (ficheros[i].isDirectory() && busquedaRecursiva)
 					dameFicheros(ficheros[i].getAbsolutePath(), mascara,

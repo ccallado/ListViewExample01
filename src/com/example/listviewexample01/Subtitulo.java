@@ -9,13 +9,13 @@ public class Subtitulo implements Cloneable {
 		return super.clone();
 	}
 
-	protected long horaIni;
-    protected long horaFin;
+	protected int horaIni;
+    protected int horaFin;
     protected String textoSub;
     protected String textoSubTra;
     protected long id;
     
-    public Subtitulo(long horaIni, long horaFin, String textoSub, String textoSubTra){
+    public Subtitulo(int horaIni, int horaFin, String textoSub, String textoSubTra){
     	super();
     	this.horaIni=horaIni;
     	this.horaFin=horaFin;
@@ -23,7 +23,7 @@ public class Subtitulo implements Cloneable {
     	this.textoSubTra=textoSubTra;
     }
 
-    public Subtitulo(long horaIni, long horaFin, String textoSub, String textoSubTra, long id){
+    public Subtitulo(int horaIni, int horaFin, String textoSub, String textoSubTra, long id){
     	super();
     	this.horaIni=horaIni;
     	this.horaFin=horaFin;
@@ -32,7 +32,7 @@ public class Subtitulo implements Cloneable {
     	this.id=id;
     }
 
-	public long getHoraIni() {
+	public int getHoraIni() {
 		return horaIni;
 	}
 
@@ -44,11 +44,11 @@ public class Subtitulo implements Cloneable {
 				df.format(horaIni / 1000 % 60));
 	}
 
-	public void setHoraIni(long horaIni) {
+	public void setHoraIni(int horaIni) {
 		this.horaIni = horaIni;
 	}
 
-	public long getHoraFin() {
+	public int getHoraFin() {
 		return horaFin;
 	}
 
@@ -60,7 +60,7 @@ public class Subtitulo implements Cloneable {
 				df.format(horaFin / 1000 % 60));
 	}
 
-	public void setHoraFin(long horaFin) {
+	public void setHoraFin(int horaFin) {
 		this.horaFin = horaFin;
 	}
 

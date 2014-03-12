@@ -14,7 +14,7 @@
         android:longClickable="true"
         android:maxLines="2"
         android:minLines="1"
-        android:text="El discurso del rey"
+        android:text="Título de la película"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <SeekBar
@@ -38,7 +38,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="lanzarPreferencias"
             android:src="@android:drawable/ic_media_previous" />
 
         <ImageButton
@@ -46,14 +45,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@android:drawable/ic_media_pause" />
+            android:src="@android:drawable/ic_btn_speak_now" />
 
         <ImageButton
             android:id="@+id/btnPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@android:drawable/ic_media_play" />
+            android:src="@android:drawable/ic_media_play"
+            android:tag="play" />
 
         <ImageButton
             android:id="@+id/btnSigui"

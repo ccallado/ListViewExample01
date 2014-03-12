@@ -24,6 +24,6 @@
         <service android:name=".ServicioMusica" />
 <!--         <activity android:name="Preferencias"></activity> -->
         <activity android:name="Preferencias"></activity>
-    </application>
+     </application>
 
 </manifest>

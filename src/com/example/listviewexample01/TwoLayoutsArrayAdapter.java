@@ -18,7 +18,7 @@ public class TwoLayoutsArrayAdapter extends ArrayAdapter<String> {
 	}
 
 	public TwoLayoutsArrayAdapter(Context context, String[] values) {
-		super(context, R.id.TextView01, values);
+		super(context, R.id.Contador, values);
 		this.values = values;
 		inflator = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

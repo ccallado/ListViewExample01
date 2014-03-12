@@ -49,6 +49,10 @@ public class AdapterSubtitulo extends BaseAdapter {
 		// Creamos un objeto subtitulo
 		Subtitulo sub = items.get(position);
 
+		//Rellenamos el Contador
+		TextView contador = (TextView) v.findViewById(R.id.Contador);
+		contador.setText(position + 1 + "");
+
 		//Rellenamos la hora de inicio
 		TextView horaIni = (TextView) v.findViewById(R.id.horaIni);
 		horaIni.setText(sub.getHoraIniT());
