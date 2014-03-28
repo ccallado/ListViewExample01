@@ -92,7 +92,9 @@ public class MainActivity extends Activity {
 			rellenaSubtitulos(audioFileUri);
 		}
 
-		revisaPosicionAudio();
+		if (!"".equals(varNombrePeli) && f.exists()) {
+			revisaPosicionAudio();
+		}
 		// Preparo la barra deslizadora con la longitud de subtitulos
 		// y creo un manejador de eventos para el cambio
 		seekbar = (SeekBar) findViewById(R.id.seekBar1);
@@ -140,7 +142,8 @@ public class MainActivity extends Activity {
 				if (arrancar.getTag() == "play") {
 					PulsadoPlay();
 				} else {
-					mServer.seek(((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
+					mServer.seek(
+							((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
 							((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio));
 					lv.setSelection(voyPor - 2);
 					seekbar.setProgress(voyPor);
@@ -157,7 +160,8 @@ public class MainActivity extends Activity {
 					if (arrancar.getTag() == "play") {
 						PulsadoPlay();
 					} else {
-						mServer.seek(((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
+						mServer.seek(
+								((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
 								((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio));
 						lv.setSelection(voyPor - 2);
 						seekbar.setProgress(voyPor);
@@ -168,15 +172,15 @@ public class MainActivity extends Activity {
 
 		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                    int pos, long id) {
-                // TODO Auto-generated method stub
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+					int pos, long id) {
+				// TODO Auto-generated method stub
 
-                voyPor = pos;
+				voyPor = pos;
 
-                return true;
-            }
-        }); 
+				return true;
+			}
+		});
 	}
 
 	@Override
@@ -233,48 +237,50 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void run() {
-				if (mServer.posicion() >= 
-						((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio)) {
-					//Actualiza margenAudio de preferencias, Si se ha cambiado
-					margenAudio = Integer
-							.valueOf(prefs.getString("margenAudio", "0"));
-					margenAudioSuma = prefs.getBoolean("margenAudioSuma", false);
-					if (!margenAudioSuma)
-						margenAudio = margenAudio * -1;
+				if (mServer != null) {
+					if (mServer.posicion() >= ((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio)) {
+						// Actualiza margenAudio de preferencias, Si se ha
+						// cambiado
+						margenAudio = Integer.valueOf(prefs.getString(
+								"margenAudio", "0"));
+						margenAudioSuma = prefs.getBoolean("margenAudioSuma",
+								false);
+						if (!margenAudioSuma)
+							margenAudio = margenAudio * -1;
 
-					ampliarAudio = Integer
-							.valueOf(prefs.getString("ampliarAudio", "0"));
+						ampliarAudio = Integer.valueOf(prefs.getString(
+								"ampliarAudio", "0"));
 
-					if (tipoReproduccion == 2) {
-						runOnUiThread(new Runnable() {
-							public void run() {
-								if (arrancar.getTag() == "pause") {
-									PulsadoPlay();
-								}
-							}
-						});
-					}
-					else {
-						if (tipoReproduccion == 1) {
+						if (tipoReproduccion == 2) {
 							runOnUiThread(new Runnable() {
 								public void run() {
-								voyPor++;
-								mServer.seek(((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
-										((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio));
-								lv.setSelection(voyPor - 2);
-								seekbar.setProgress(voyPor);
+									if (arrancar.getTag() == "pause") {
+										PulsadoPlay();
+									}
 								}
 							});
-						}
-						else {
-							if (tipoReproduccion == 0) {
+						} else {
+							if (tipoReproduccion == 1) {
 								runOnUiThread(new Runnable() {
 									public void run() {
-									voyPor++;
-									lv.setSelection(voyPor - 2);
-									seekbar.setProgress(voyPor);
+										voyPor++;
+										mServer.seek(
+												((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
+												((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio));
+										lv.setSelection(voyPor - 2);
+										seekbar.setProgress(voyPor);
 									}
 								});
+							} else {
+								if (tipoReproduccion == 0) {
+									runOnUiThread(new Runnable() {
+										public void run() {
+											voyPor++;
+											lv.setSelection(voyPor - 2);
+											seekbar.setProgress(voyPor);
+										}
+									});
+								}
 							}
 						}
 					}
@@ -288,7 +294,8 @@ public class MainActivity extends Activity {
 		// Intent intent = new Intent(MainActivity.this,
 		// ServicioMusica.class);
 		// startService(intent);
-		mServer.seek(((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
+		mServer.seek(
+				((lista.get(voyPor).horaIni - margenAudio) - ampliarAudio),
 				((lista.get(voyPor).horaFin - margenAudio) + ampliarAudio));
 		lv.setSelection(voyPor);
 		// lv.setSelected(true);
@@ -354,7 +361,7 @@ public class MainActivity extends Activity {
 				edPref.putString("voyPor", voyPor + "");
 				edPref.commit();
 
-				//Arranca servicio de música
+				// Arranca servicio de música
 				mServer.cambiaAudio(this);
 			}
 		}
@@ -419,17 +426,25 @@ public class MainActivity extends Activity {
 					Tmp.id = Long.parseLong(textoLinea) + 0;
 					textoLinea = bufFichero.readLine();
 					// Pongo la hora de inicio
-					Tmp.horaIni = 
-							Integer.parseInt(textoLinea.substring(0, 2)) * 1000 * 60 * 60 +
-							Integer.parseInt(textoLinea.substring(3, 5)) * 1000 * 60 +
-							Integer.parseInt(textoLinea.substring(6, 8)) * 1000 +
-							Integer.parseInt(textoLinea.substring(9, 12));
+					Tmp.horaIni = Integer.parseInt(textoLinea.substring(0, 2))
+							* 1000 * 60 * 60
+							+ Integer.parseInt(textoLinea.substring(3, 5))
+							* 1000 * 60
+							+ Integer.parseInt(textoLinea.substring(6, 8))
+							* 1000
+							+ Integer.parseInt(textoLinea.substring(9, 12));
 					// Pongo la hora de finalización
-					Tmp.horaFin = 
-							Integer.parseInt(textoLinea.substring(17, 19)) * 1000 * 60 * 60 +
-							Integer.parseInt(textoLinea.substring(20, 22)) * 1000 * 60 + 
-							Integer.parseInt(textoLinea.substring(23, 25)) * 1000 +
-							Integer.parseInt(textoLinea.substring(26, 29));
+					Tmp.horaFin = Integer
+							.parseInt(textoLinea.substring(17, 19))
+							* 1000
+							* 60
+							* 60
+							+ Integer.parseInt(textoLinea.substring(20, 22))
+							* 1000
+							* 60
+							+ Integer.parseInt(textoLinea.substring(23, 25))
+							* 1000
+							+ Integer.parseInt(textoLinea.substring(26, 29));
 
 					// Saco el subtitulo del idioma (puede estar compuesto por
 					// varias líneas)
@@ -438,7 +453,7 @@ public class MainActivity extends Activity {
 					textoLinea = bufFichero.readLine();
 					varTexto = "";
 
-//					while (!(textoLinea == null || "".equals(textoLinea))) {
+					// while (!(textoLinea == null || "".equals(textoLinea))) {
 					while (!(textoLinea == null || isNumeric(textoLinea))) {
 						if (!("".equals(textoLinea))) {
 							varTexto = varTexto + textoLinea + "<br>";
@@ -875,33 +890,31 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private static boolean isNumeric(String cadena){ 
-		try { 
-			Integer.parseInt(cadena); 
-			return true; 
-		} catch (NumberFormatException nfe){ 
-			return false; 
-		} 
-	} 
-	
-	private static void cargaPreferencias(Context context){
+	private static boolean isNumeric(String cadena) {
+		try {
+			Integer.parseInt(cadena);
+			return true;
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+	}
+
+	private static void cargaPreferencias(Context context) {
 		prefs = context.getSharedPreferences(
 				"com.example.listviewexample01_preferences",
 				Context.MODE_PRIVATE);
 		varNombrePeli = prefs.getString("nombrePeli", "");
 
-		tipoReproduccion = Integer
-				.valueOf(prefs.getString("tipoReproduccion", "0"));
+		tipoReproduccion = Integer.valueOf(prefs.getString("tipoReproduccion",
+				"0"));
 
 		voyPor = Integer.valueOf(prefs.getString("voyPor", "0"));
 
-		margenAudio = Integer
-				.valueOf(prefs.getString("margenAudio", "0"));
+		margenAudio = Integer.valueOf(prefs.getString("margenAudio", "0"));
 		margenAudioSuma = prefs.getBoolean("margenAudioSuma", false);
 		if (!margenAudioSuma)
 			margenAudio = margenAudio * -1;
-		
-		ampliarAudio = Integer
-				.valueOf(prefs.getString("ampliarAudio", "0"));
+
+		ampliarAudio = Integer.valueOf(prefs.getString("ampliarAudio", "0"));
 	}
 }

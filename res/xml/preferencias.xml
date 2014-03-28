@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+  android:key="preferencias_principal" >
+
+  <EditTextPreference
+    android:key="nombrePeli"
+    android:title="Nombre del archivo"
+    android:summary="Fichero que se va a reproducir"
+    android:defaultValue=""/>
+  <EditTextPreference
+    android:key="voyPor"
+    android:title="Número de subtítulo actual"
+    android:summary="Es el número de subtítulo que estoy escuchando"
+    android:numeric="integer"
+    android:defaultValue="0"/>
+  <CheckBoxPreference android:summary="Cuando varios subtitulos se superponen. Dejarlos en uno solo" android:key="agruparSubtitulos" android:title="Agrupar subtítulos"/>
+  <ListPreference
+    android:key="tipoReproduccion"
+    android:title="Tipo de reproducción"
+    android:summary="Se escoge como queremos que se reproduzca el audio"
+    android:entries="@array/tiposReproduccion"
+    android:entryValues="@array/tiposReproduccionValores"
+    android:defaultValue="2"/>
+  <EditTextPreference
+    android:key="margenSubtitulos"
+    android:title="Margen separador subtitulos"
+    android:summary="Margen en milisegundos para impedir que los subtitulos de dos idiomas se solapen"
+    android:numeric="integer"
+    android:defaultValue="300"/>
+  <EditTextPreference
+    android:key="margenAudio"
+    android:title="Ajuste del audio en milisegundos"
+    android:summary="Ajuste que hacemos al audio para que cuadre con los subtitulos."
+    android:numeric="integer"
+    android:defaultValue="0"/>
+  <CheckBoxPreference android:summary="Indicar si el ajuste es positivo o negativo" android:key="margenAudioSuma" android:title="Margen audio positivo"/>
+  <EditTextPreference
+    android:key="ampliarAudio"
+    android:title="Tiempo añadido al audio"
+    android:summary="Tiempo añadido al principio y al final del audio en milisegundos."
+    android:numeric="integer"
+    android:defaultValue="0"/>
+  
+</PreferenceScreen>

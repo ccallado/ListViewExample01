@@ -7,6 +7,7 @@ package com.example.listviewexample01;
  */
 import java.io.File;
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -34,16 +35,19 @@ public class BuscadorDeFicheros {
 	 */
 	public static void dameFicheros(String pathInicial, String mascara,
 			String[] listaFicheros, boolean busquedaRecursiva) {
+		Pattern pattern = Pattern.compile(mascara);
 		int llevo = 0;
 		File directorioInicial = new File(pathInicial);
 		if (directorioInicial.isDirectory()) {
 			File[] ficheros = directorioInicial.listFiles();
 			Arrays.sort(ficheros);
 			for (int i = 0; i < ficheros.length; i++) {
+				Matcher matcher = pattern.matcher(ficheros[i].getName());
 				if (ficheros[i].isDirectory() && busquedaRecursiva)
 					dameFicheros(ficheros[i].getAbsolutePath(), mascara,
 							listaFicheros, busquedaRecursiva);
-				else if (Pattern.matches(mascara, ficheros[i].getName())) {
+//				else if (Pattern.matches(mascara, ficheros[i].getName())) {
+				else if (matcher.find()) {
 					listaFicheros[llevo] = ficheros[i].getPath();
 					llevo++;
 				}
